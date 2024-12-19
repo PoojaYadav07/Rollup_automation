@@ -1,0 +1,5 @@
+kayzen,inventory_discovery,DR=kayzen_default_gs_26Jan24
+kayzen,inventory_price,DR=d5565b34c09b09159f7d5115fe638ba2_newMapper_app_percentile
+dnb,default,DR=c59a3ec6a125715a826b51cc2e40b14f
+mobilefuse,demand,HR=sigview.MF_DEMAND.MF_Demand_GS_16Nov23
+mobilefuse,supply,HR=sigview.MF_DEMAND.MF_Demand_GS_16Nov23

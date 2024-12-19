@@ -1,40 +1,62 @@
 #!/bin/bash
 
 # Move to the correct working directory
-#cd /pipeline_automation/Rollup_automation/Rollup || exit 1
+#cd /var/lib/jenkins/pipeline_automation/Rollup_automation/Rollup || exit 1
 
 # Source driver details
-#source /Users/poojayadav/Downloads/pipeline_automation/Rollup_automation/Rollup
+#source /var/lib/jenkins/pipeline_automation/Rollup_automation/Rollup
 
 # Define configuration file paths
 CONFIG_FILE="/Users/poojayadav/Downloads/pipeline_automation/Rollup_automation/Rollup/groupby_configs.json"
+DEPENDENCY_FILE="/Users/poojayadav/Downloads/pipeline_automation/Rollup_automation/Rollup/dependencies.txt"
 
 # Parameters passed from Jenkins
 ORGANIZATION=$1
 VIEW=$2
 COLUMNS_JSON=$3
-TYPES=$4 # Multiple values separated by commas, e.g., "HR,DR,DS,WR"
-DEPENDENCIES=$5
+TYPES=$4
 
 # Generate a unique projection ID
 generate_projection_id() {
-  local granularity=$1
+  local organization="$1"
+  local view="$2"
+  local type="$3"
   echo "${organization}_${view}_${type}_$(date +'%d%b%y')"
 }
 
-# Function to generate JSON
-generate_json() {
-  local json_content="$1"
-  local type="$2"
-  local json_file="Rollup_${ORGANIZATION}_$(date +'%Y%m%d%H%M%S').json"
-  
-  # Append the new JSON object
-  echo "$json_content" >> "$json_file"
-  
-  # Close the array
-  #echo "]" >> "$json_file"
-  
-  echo "Generated JSON has been appended to $json_file"
+# Function to fetch static dependency
+fetch_dependency() {
+  local organization="$1"
+  local view="$2"
+  local type="$3"
+  local key="${organization},${view},${type}"
+  local dependency
+
+  dependency=$(grep "^$key=" "$DEPENDENCY_FILE" | cut -d'=' -f2)
+  if [[ -z "$dependency" ]]; then
+    echo "Error: No dependency found for $key in $DEPENDENCY_FILE"
+    exit 1
+  fi
+  echo "$dependency"
+}
+
+# Function to format COLUMNS_JSON as a JSON array
+format_columns_json() {
+  local columns="$1"
+  local formatted_columns
+
+  if [[ "$columns" == *","* ]]; then
+    IFS=',' read -ra COL_ARRAY <<< "$columns"
+    #formatted_columns="["
+    for col in "${COL_ARRAY[@]}"; do
+      formatted_columns+="\"${col}\",\n"
+    done
+    formatted_columns=$(echo -e "$formatted_columns" | sed '$s/,$//')
+  else
+    formatted_columns="[\"$columns\"]"
+  fi
+
+  echo "$formatted_columns"
 }
 
 # Function to replace placeholders in JSON template
@@ -44,90 +66,109 @@ replace_placeholders() {
   local range="$3"
   local trigger="$4"
   local projection_id="$5"
-
- # Format COLUMNS_JSON as JSON array
-local formatted_column_json=""
-if [[ "$COLUMNS_JSON" == *","* ]]; then
-  IFS=',' read -ra COLUMNS <<< "$COLUMNS_JSON"
-  for col in "${COLUMNS[@]}"; do
-    formatted_column_json+="\"${col}\"\n"
-  done
-  formatted_column_json=$(echo -e "$formatted_column_json" | sed '$s/,$//')
-else
-  formatted_column_json="[\"$COLUMNS_JSON\"]"
-fi
+  local dependency="$6"
+  local formatted_columns="$7"
 
   # Replace placeholders
-  template="${template//\$\{COLUMNS_JSON\}/$formatted_column_json}"
+  template="${template//\$\{COLUMNS_JSON\}/$formatted_columns}"
   template="${template//\$\{GRANULARITY\}/$granularity}"
   template="${template//\$\{RANGE\}/$range}"
   template="${template//\$\{TRIGGER\}/$trigger}"
-  template="${template//\$\{DEPENDENCIES\}/$DEPENDENCIES}"
+  template="${template//\$\{DEPENDENCIES\}/$dependency}"
   template="${template//\$\{PROJECTION_ID\}/$projection_id}"
 
   echo "$template"
 }
 
-# Validation function
+# Function to generate JSON file
+generate_json() {
+  local json_content="$1"
+  local type="$2"
+  local output_file="Rollup_${ORGANIZATION}_$(date +'%Y%m%d%H%M%S').json"
+
+  echo "$json_content" >> "$output_file"
+  echo "Generated JSON file: $output_file"
+}
+
+# Function to validate organization and view
 validate_organization_view() {
-  local ORGANIZATION="$1"
-  local VIEW="$2"
-  local CONFIG_FILE="$3"
+  local organization="$1"
+  local view="$2"
+  local config_file="$3"
 
-
-  # Validate the organization and view
   local result
   result=$(jq -r "
-    if (type == \"object\" and has(\"$ORGANIZATION\")) and 
-       (.\"$ORGANIZATION\" | type == \"object\" and has(\"$VIEW\")) 
+    if (type == \"object\" and has(\"$organization\")) and 
+       (.\"$organization\" | type == \"object\" and has(\"$view\")) 
     then \"valid\" 
     else \"invalid\" 
     end
-  " "$CONFIG_FILE")
+  " "$config_file")
 
   if [[ "$result" == "invalid" ]]; then
-    echo "Error: Invalid organization or view combination: $ORGANIZATION - $VIEW"
+    echo "Error: Invalid organization or view combination: $organization - $view"
     exit 1
   fi
 }
 
-# Validate organization and view
+# Function to process types and generate JSON
+process_types() {
+  local organization="$1"
+  local view="$2"
+  local json_template="$3"
+  local types="$4"
+  local formatted_columns="$5"
+  local last_projection_id=""
+
+  IFS=',' read -ra TYPE_ARRAY <<< "$types"
+  for type in "${TYPE_ARRAY[@]}"; do
+    case $type in
+      HR)
+        granularity="hour"
+        range="hour"
+        trigger="immediate"
+        dependency=$(fetch_dependency "$organization" "$view" "HR")
+        ;;
+      DR)
+        granularity="hour"
+        range="day"
+        trigger="oncomplete"
+        dependency=$(fetch_dependency "$organization" "$view" "DR")
+        ;;
+      DG)
+        granularity="day"
+        range="day"
+        trigger="oncomplete"
+        dependency="$last_projection_id" # DG depends on DR's projection ID
+        ;;
+      WG)
+        granularity="week"
+        range="week"
+        trigger="oncomplete"
+        dependency="$last_projection_id" # WG depends on DS's projection ID
+        ;;
+      *)
+        echo "Unknown type: $type"
+        continue
+        ;;
+    esac
+
+    # Generate projection ID
+    projection_id=$(generate_projection_id "$organization" "$view" "$type")
+
+    # Replace placeholders in the JSON template
+    json_content=$(replace_placeholders "$json_template" "$granularity" "$range" "$trigger" "$projection_id" "$dependency" "$formatted_columns")
+
+    # Save the last projection ID for cascading dependencies
+    last_projection_id="$projection_id"
+
+    # Generate JSON file
+    generate_json "$json_content" "$type"
+  done
+}
+
+# Main script logic
 validate_organization_view "$ORGANIZATION" "$VIEW" "$CONFIG_FILE"
-
-# Extract JSON template
 JSON_TEMPLATE=$(jq -r ".\"$ORGANIZATION\".\"$VIEW\"" "$CONFIG_FILE")
-
-# Iterate over each type and generate JSON
-IFS=',' read -ra TYPE_ARRAY <<< "$TYPES"
-for type in "${TYPE_ARRAY[@]}"; do
-  case $type in
-    HR)
-      granularity="hour"
-      range="hour"
-      trigger="immediate"
-      ;;
-    DR)
-      granularity="hour"
-      range="day"
-      trigger="oncomplete"
-      ;;
-    DS)
-      granularity="day"
-      range="day"
-      trigger="oncomplete"
-      ;;
-    WR)
-      granularity="week"
-      range="week"
-      trigger="oncomplete"
-      ;;
-    *)
-      echo "Unknown type: $type"
-      continue
-      ;;
-  esac
-
-  projection_id=$(generate_projection_id "$granularity")
-  json_content=$(replace_placeholders "$JSON_TEMPLATE" "$granularity" "$range" "$trigger" "$projection_id")
-  generate_json "$json_content" "$type"
-done
+FORMATTED_COLUMNS_JSON=$(format_columns_json "$COLUMNS_JSON")
+process_types "$ORGANIZATION" "$VIEW" "$JSON_TEMPLATE" "$TYPES" "$FORMATTED_COLUMNS_JSON"
