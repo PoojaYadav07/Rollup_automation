@@ -1,5 +1,5 @@
 {
-    "kayzen": {
+    "Kayzen": {
         "inventory_discovery": {
             "type": "GROUPBY",
             "logicalTableName": "Applift",
@@ -9,22 +9,7 @@
                 "hour",
                 "w"
             ],
-            "agg": {
-                "sum": [
-                    {
-                        "column": "bid_floor", 
-                        "alias": "bid_floor"
-                    },
-                    {
-                        "column": "Auctions", 
-                        "alias": "Auctions"
-                    }
-                ],
-                "count": [],
-                "avg": [],
-                "min": [],
-                "max": []
-            },
+            "agg": "${Metric_Details}",
             "granularity": "${GRANULARITY}",
             "range": "${RANGE}",
             "indexingDisabled": "false",
@@ -43,22 +28,7 @@
                 "hour",
                 "w"
             ],
-            "agg": {
-                "sum": [
-                    {
-                        "column": "price", 
-                        "alias": "price"
-                    },
-                    {
-                        "column": "count", 
-                        "alias": "count"
-                    }
-                ],
-                "count": [],
-                "avg": [],
-                "min": [],
-                "max": []
-            },
+            "agg": "${Metric_Details}",
             "granularity": "${GRANULARITY}",
             "range": "${RANGE}",
             "indexingDisabled": "false",
@@ -87,129 +57,7 @@
             ],
             "logicalTableName": "DNB",
             "type": "GROUPBY",
-            "agg": {
-                "sum": [
-                    {
-                       "column": "totalStatusResponse",
-                       "alias": "totalStatusResponse"
-                    },
-                    {
-                       "column": "matchedStatusResponse",
-                       "alias": "matchedStatusResponse"
-                    }
-                ],
-                "count": [],
-                "avg": [],
-                "min": [],
-                "max": [],
-                "approxCountDistinct": [
-                    {
-                        "column" : "responsejobfunction",
-                        "alias" : "responsejobfunction"
-                    },
-                    {
-                        "column" : "responsejobseniority",
-                        "alias" : "responsejobseniority"
-                    },
-                    {
-                        "column" : "responsecompanystate",
-                        "alias" : "responsecompanystate"
-                    },
-                    {
-                        "column" : "responsecompanycountry",
-                        "alias" : "responsecompanycountry"
-                    },
-                    {
-                        "column" : "responsefortune1000",
-                        "alias" : "responsefortune1000"
-                    },
-                    {
-                        "column" : "responsecompanyname",
-                        "alias" : "responsecompanyname"
-                    },
-                    {
-                        "column" : "responsecompanycity",
-                        "alias" : "responsecompanycity"
-                    },
-                    {
-                        "column" : "customerurlstemcomplete",
-                        "alias" : "customerurlstemcomplete"
-                    },
-                    {
-                        "column" : "visitorcookieid",
-                        "alias" : "visitorcookieid"
-                    },
-                    {
-                        "column" : "responsesitedunsid",
-                        "alias" : "responsesitedunsid"
-                    },
-                    {
-                        "column" : "responseparentdunsid",
-                        "alias" : "responseparentdunsid"
-                    },
-                    {
-                        "column" : "responsedomesticultdunsid",
-                        "alias" : "responsedomesticultdunsid"
-                    },
-                    {
-                        "column" : "responseultduns",
-                        "alias" : "responseultduns"
-                    },
-                    {
-                        "column" : "responsejobfunction_new",
-                        "alias" : "responsejobfunction_new"
-                    },
-                    {
-                        "column" : "responsejobseniority_new",
-                        "alias" : "responsejobseniority_new"
-                    },
-                    {
-                        "column" : "responsecompanystate_new",
-                        "alias" : "responsecompanystate_new"
-                    },
-                    {
-                        "column" : "responsecompanycountry_new",
-                        "alias" : "responsecompanycountry_new"
-                    },
-                    {
-                        "column" : "responsefortune1000_new",
-                        "alias" : "responsefortune1000_new"
-                    },
-                    {
-                        "column" : "responsecompanyname_new",
-                        "alias" : "responsecompanyname_new"
-                    },
-                    {
-                        "column" : "responsecompanycity_new",
-                        "alias" : "responsecompanycity_new"
-                    },
-                    {
-                        "column" : "customerurlstemcomplete_new",
-                        "alias" : "customerurlstemcomplete_new"
-                    },
-                    {
-                        "column" : "visitorcookieid_new",
-                        "alias" : "visitorcookieid_new"
-                    },
-                    {
-                        "column" : "responsesitedunsid_new",
-                        "alias" : "responsesitedunsid_new"
-                    },
-                    {
-                        "column" : "responseparentdunsid_new",
-                        "alias" : "responseparentdunsid_new"
-                    },
-                    {
-                        "column" : "responsedomesticultdunsid_new",
-                        "alias" : "responsedomesticultdunsid_new"
-                    },
-                    {
-                        "column" : "responseultduns_new",
-                        "alias" : "responseultduns_new"
-                    }
-         
-                ]
-            }
+           "agg": "${Metric_Details}",
         }
     },
     "Mobilefuse": {
@@ -222,68 +70,7 @@
                 "hour",
                 "d"
             ],
-            "agg": {
-                "sum": [
-                    {
-                        "column" : "cost",
-                        "alias" : "cost"
-                    },
-                    {
-                        "column" : "impressions",
-                        "alias" : "impressions"
-                    },
-                    {
-                        "column" : "revenue",
-                        "alias" : "revenue"
-                    },
-                    {
-                        "column" : "bid_count",
-                        "alias" : "bid_count"
-                    },
-                    {
-                        "column" : "bid_price",
-                        "alias" : "bid_price"
-                    },
-                    {
-                        "column" : "responses",
-                        "alias" : "responses"
-                    },
-                    {
-                        "column" : "responses_with_bidCount",
-                        "alias" : "responses_with_bidCount"
-                    },
-                    {
-                        "column" : "response_time",
-                        "alias" : "response_time"
-                    },
-                    {
-                        "column" : "outgoing_bidfloor",
-                        "alias" : "outgoing_bidfloor"
-                    },
-                    {
-                        "column" : "has_winning_bid",
-                        "alias" : "has_winning_bid"
-                    },
-                    {
-                        "column" : "mRaidViewable",
-                        "alias" : "mRaidViewable"
-                    },
-                    {
-                        "column" : "click",
-                        "alias" : "click"
-                    },
-                    {
-                        "column" : "bids_below_outgoing_floor",
-                        "alias" : "bids_below_outgoing_floor"
-                    }
-         
-                ],
-                "count": [],
-                "avg": [],
-                "min": [],
-                "max": [],
-                "approxCountDistinct": []
-            },
+            "agg": "${Metric_Details}",
             "granularity": "${GRANULARITY}",
             "range": "${RANGE}",
             "sort" : "hour",
@@ -303,87 +90,7 @@
                 "hour",
                 "d"
             ],
-            "agg": {
-                "sum": [
-                    {
-                        "column" : "bid_floor",
-                        "alias" : "bid_floor"
-                    },
-                    {
-                        "column" : "cost",
-                        "alias" : "cost"
-                    },
-                    {
-                        "column" : "has_age_count",
-                        "alias" : "has_age_count"
-                    },
-                    {
-                        "column" : "has_gender_count",
-                        "alias" : "has_gender_count"
-                    },
-                    {
-                        "column" : "has_ifa_count",
-                        "alias" : "has_ifa_count"
-                    },
-                    {
-                        "column" : "hasLatLon_count",
-                        "alias" : "hasLatLon_count"
-                    },
-                    {
-                        "column" : "impressions",
-                        "alias" : "impressions"
-                    },
-                    {
-                        "column" : "opted_out",
-                        "alias" : "opted_out"
-                    },
-                    {
-                        "column" : "requests",
-                        "alias" : "requests"
-                    },
-                    {
-                        "column" : "revenue",
-                        "alias" : "revenue"
-                    },
-                    {
-                        "column" : "is_omsdk_eligible_count",
-                        "alias" : "is_omsdk_eligible_count"
-                    },
-                    {
-                        "column" : "is_optout_count",
-                        "alias" : "is_optout_count"
-                    },
-                    {
-                        "column" : "fraud_filtered_requests",
-                        "alias" : "fraud_filtered_requests"
-                    },
-                    {
-                        "column" : "has_skadn",
-                        "alias" : "has_skadn"
-                    },
-                    {
-                        "column" : "videostarts",
-                        "alias" : "videostarts"
-                    },
-                    {
-                        "column" : "videocompletes",
-                        "alias" : "videocompletes"
-                    },
-                    {
-                        "column" : "mRaidViewable",
-                        "alias" : "mRaidViewable"
-                    },
-                    {
-                        "column" : "click",
-                        "alias" : "click"
-                    }        
-                ],
-                "count": [],
-                "avg": [],
-                "min": [],
-                "max": [],
-                "approxCountDistinct": []
-            },
+            "agg": "${Metric_Details}",
             "sort": "hour",
             "granularity": "${GRANULARITY}",
             "range": "${RANGE}",
